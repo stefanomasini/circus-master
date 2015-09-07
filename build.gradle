@@ -23,8 +23,8 @@ luci {
 
   def theFactory = machineFactories.zetta
 
-  def boxCount = 1
-  def workerCount = 1
+  def boxCount = 3
+  def workerCount = 2
   
   hosts {
     (1..boxCount).each { index ->
