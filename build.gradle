@@ -1,0 +1,56 @@
+plugins {
+  id "net.praqma.luci" version "0.4.1"
+}
+
+/*
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies { classpath 'net.praqma.luci:luci-gradlePlugin:0.4.1' }
+}
+apply plugin: 'net.praqma.luci'
+*/
+luci {
+  machineFactories {
+    zetta {
+      // username and password read from ~/.luci/settings.properties
+      domainId = '807427196c02496ea86bc65a110472e6'
+      tenantName = 'Circus'
+    }
+  }
+
+  def theFactory = machineFactories.zetta
+
+  def boxCount = 1
+  def workerCount = 1
+  
+  hosts {
+    (1..boxCount).each { index ->
+      "vm${index}" {
+        dockerMachine(factory: theFactory)
+      }
+    }
+    (1..workerCount).each { index ->
+      "worker${index}" {
+        dockerMachine(factory: theFactory)
+      }
+    }
+  }
+
+  boxes {
+    (1..boxCount).each { index ->
+      "box${index}" {
+        dockerHost = hosts."vm${index}"
+        service('jenkins') {
+          staticSlave('worker1') {
+            dockerHost = hosts.worker1
+            dockerImage = 'luci/staticslave-docker:0.2'
+          }
+        }
+      }
+    }
+  }
+}
+
