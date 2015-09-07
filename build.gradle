@@ -24,7 +24,7 @@ luci {
 
     def theFactory = machineFactories.zetta
 
-    def boxCount = 3
+    def boxCount = 20
     def workerCount = 2
 
     hosts {
