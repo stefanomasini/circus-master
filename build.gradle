@@ -1,20 +1,12 @@
 plugins {
-    id "net.praqma.luci" version "0.4.2"
+    id "net.praqma.luci" version "0.4.4"
 }
 
-/*
-buildscript {
-    repositories {
-        mavenLocal()
-        jcenter()
-    }
-    dependencies { classpath 'net.praqma.luci:luci-gradlePlugin:0.4.1' }
-}
-apply plugin: 'net.praqma.luci'
-*/
 luci {
     machineFactories {
         zetta {
+            // username and password read from ~/.luci/settings.properties
+            // can alternatively be specified here
             username = 'user1'
             password = 'password1'
             domainId = '807427196c02496ea86bc65a110472e6'
@@ -22,57 +14,51 @@ luci {
         }
     }
 
+    // Use virtualBox factory to set it up on VBox
     def theFactory = machineFactories.zetta
 
-    def boxCount = 20
-    def workerCount = 2
+    def machineCount = 20
 
     hosts {
+        // Host to run the Circus workshop on
         workshop {
             dockerMachine(factory: theFactory)
         }
-        (1..boxCount).each { index ->
-            "vm${index}" {
-                dockerMachine(factory: theFactory)
-            }
-        }
-        (1..workerCount).each { index ->
-            "worker${index}" {
+        // A bunch of machines we might use
+        (1..machineCount).each { index ->
+            "machine${index}" {
                 dockerMachine(factory: theFactory)
             }
         }
     }
 
+    def slaveImage = 'luci/staticslave-docker:0.5'
     boxes {
+        // lucibox to user for Circus workshop
         workshop {
             dockerHost = hosts.workshop
-            service('jenkins') {
-                staticSlave('worker') {
-                    dockerImage = 'luci/staticslave-docker:0.4'
-                }
 
+            // Jenkins server
+            service('jenkins') {
+                // define three slaves (the could run on another host)
                 staticSlave('worker1') {
-                    dockerHost = hosts.worker1
-                    dockerImage = 'luci/staticslave-docker:0.4'
+                    dockerImage = slaveImage
                 }
 
                 staticSlave('worker2') {
-                    dockerHost = hosts.worker2
-                    dockerImage = 'luci/staticslave-docker:0.4'
+                    dockerImage = slaveImage
                 }
-            }
-        }
 
-        (1..boxCount).each { index ->
-            "box${index}" {
-                dockerHost = hosts."vm${index}"
-                service('jenkins') {
-                    staticSlave('worker1') {
-                        dockerHost = hosts.worker1
-                        dockerImage = 'luci/staticslave-docker:0.4'
-                    }
+                staticSlave('worker3') {
+                    dockerImage = slaveImage
                 }
             }
+
+            // Artifactory
+            service('artifactory') {
+                // no configuration needed
+            }
+
         }
     }
 }
