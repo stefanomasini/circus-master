@@ -42,14 +42,22 @@ luci {
             service('jenkins') {
                 // define three slaves (the could run on another host)
                 staticSlave('worker1') {
+                    dockerHost = hosts.machine7
+                    executors = 3
                     dockerImage = slaveImage
                 }
 
                 staticSlave('worker2') {
+                    dockerHost = hosts.machine5
+                    executors = 4
                     dockerImage = slaveImage
                 }
 
                 staticSlave('worker3') {
+                    dockerImage = slaveImage
+                }
+
+                staticSlave('worker4') {
                     dockerImage = slaveImage
                 }
             }
